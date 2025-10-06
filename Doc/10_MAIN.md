@@ -69,6 +69,8 @@ int main(void)
             uart_event_char = 0;
             room_control_on_uart_receive(c);
         }
+        // Llamar a la función de actualización periódica
+        room_control_update();
     }
 }
 
@@ -97,9 +99,6 @@ void USART2_IRQHandler(void)
 }
 ```
 
-### Notas:
-- Las ISRs `EXTI15_10_IRQHandler` y `USART2_IRQHandler` deben implementarse en `Src/nvic.c` o un archivo separado como `Src/isr.c`.
-- Asegúrate de que `systick_get_tick()` esté disponible para timestamps.
 
 ---
 

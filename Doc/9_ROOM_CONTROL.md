@@ -49,6 +49,12 @@ void room_control_on_uart_receive(char received_char);
  */
 void room_control_app_init(void);
 
+/**
+ * @brief Función para actualizar la lógica de estados periódicamente (llamar en el bucle principal).
+ *        Maneja timeouts, transiciones automáticas, etc.
+ */
+void room_control_update(void);
+
 #endif // ROOM_CONTROL_H
 ```
 
@@ -64,7 +70,14 @@ En el archivo `Src/room_control.c` implementa el siguiente código como base, y 
 #include "uart.h"    // Para enviar mensajes
 #include "tim.h"     // Para controlar el PWM
 
-// TODO: Definir variables de estado necesarias
+// Estados de la sala
+typedef enum {
+    ROOM_IDLE,
+    ROOM_OCCUPIED
+} room_state_t;
+
+// Variable de estado global
+room_state_t current_state = ROOM_IDLE;
 
 void room_control_app_init(void)
 {
@@ -73,7 +86,8 @@ void room_control_app_init(void)
 
 void room_control_on_button_press(void)
 {
-    // TODO: Implementar la lógica para manejar la pulsación del botón
+    // TODO: Implementar la lógica para manejar la pulsación del botón usando estados
+    // Ejemplo: Si idle, cambiar a occupied; si occupied, cambiar a idle
 }
 
 void room_control_on_uart_receive(char received_char)
@@ -87,10 +101,24 @@ void room_control_on_uart_receive(char received_char)
         case 'L':
             // TODO: Set PWM to 0%
             break;
+        case 'O':
+        case 'o':
+            // TODO: Cambiar estado a occupied
+            break;
+        case 'I':
+        case 'i':
+            // TODO: Cambiar estado a idle
+            break;
         default:
             // TODO: Echo the character
             break;
     }
+}
+
+void room_control_update(void)
+{
+    // TODO: Implementar lógica periódica, como timeouts para apagar LED en estado occupied
+    // Ejemplo: Si estado occupied y han pasado 3s desde button press, cambiar a idle y apagar LED
 }
 ```
 
@@ -115,6 +143,24 @@ Una vez que hayas implementado la lógica básica:
 2. **Mejora anti-rebote**: Implementa debounce usando timestamps.
 3. **Agrega más comandos UART**: Implementa comandos para cambiar duty cycle a valores específicos (ej. '1' = 10%, '5' = 50%).
 4. **Timeout del LED**: En `SysTick_Handler`, verifica si han pasado 3s desde `led_on_time` y apaga el LED.
+
+## 8. Completa la Lógica de Estados
+
+El código de referencia incluye una máquina de estados simple con dos estados: `ROOM_IDLE` y `ROOM_OCCUPIED`. Completa la lógica en las funciones para que el sistema funcione como un control básico de sala.
+
+**Ejercicios:**
+1. En `room_control_on_button_press()`: Implementa la lógica para alternar entre idle y occupied al presionar el botón. En occupied, enciende el LED principal; en idle, apágalo.
+2. En `room_control_on_uart_receive()`: Completa los casos 'O'/'o' y 'I'/'i' para cambiar estados via UART. Envía mensajes como "Sala ocupada" o "Sala vacía".
+3. Agrega lógica para que en estado occupied el PWM esté al 100%, y en idle al 0%.
+4. Comando UART 'B<0-9>': Cambia duty cycle manualmente (e.g., 'B5' = 50%).
+5. En `room_control_update()`: Implementa timeout para apagar el LED después de 3s en estado occupied (volver a idle automáticamente).
+6. En el bucle principal de `main.c`: Llama a `room_control_update()` en cada iteración para manejar tareas periódicas.
+
+**Hints:**
+- Usa if-else para verificar `current_state`.
+- Llama a funciones de gpio y tim para controlar LEDs y PWM.
+- Envía mensajes UART con `uart_send_string()`.
+- Usa `systick_get_ms()` para timestamps de timeout.
 
 ## 8. Verificación de Funcionamiento
 
