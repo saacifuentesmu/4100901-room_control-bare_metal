@@ -109,4 +109,4 @@ Refactoriza el código del taller en lenguaje C para usar estas librerías.
 > Esta estructura facilita la comprensión y el mantenimiento del código en proyectos embebidos.
 
 **Siguiente guía:**
-Timers y PWM: [TIM2_PWM.md](6_TIM2_PWM.md)
+Comunicación UART: [USART.md](6_USART.md)

@@ -1,4 +1,4 @@
-# USART2.md
+# 6. UART.md
 > **Referencia:**
 > Zhu, Yifen. *Embedded Systems with ARM Cortex-M Microcontrollers in Assembly Language and C*, 2nd Edition, 2022. ***Capítulo 22 recomendado para esta sección***
 
@@ -196,20 +196,12 @@ Para verificar que tu implementación funciona correctamente:
    - Debe hacer eco de los mensajes recibidos con el formato "Recibido: \<mensaje>\r\n"
    - El LED y botón deben seguir funcionando normalmente
 
-## 9. Entrega
-
-Asegúrate de que tu implementación incluya:
-- [ ] Archivo `Inc/uart.h` con las definiciones correctas
-- [ ] Archivo `Src/uart.c` con todas las funciones implementadas
-- [ ] Modificaciones en `Src/main.c` para integrar UART
-- [ ] Modificación en `cmake/vscode_generated.cmake` para incluir uart.c
-- [ ] Proyecto compilando sin errores
-- [ ] Funcionalidad UART operativa
+## 9. Funcionalidad UART operativa
 
    **Pros de Polling:**
    - Simple de implementar.
    - No requiere configuración de interrupciones.
-   - Menos overhead de contexto switching.
+   - Menos overhead de context switching.
 
    **Cons de Polling:**
    - Consume CPU continuamente verificando el estado.
@@ -225,4 +217,9 @@ Asegúrate de que tu implementación incluya:
    - Mayor complejidad en el código.
    - Riesgo de anidamiento de interrupciones.
    - Overhead de entrada/salida de ISR.
+
+---
+
+**Siguiente guía:**
+NVIC: [NVIC.md](7_NVIC.md)
 
