@@ -2,10 +2,10 @@
 #include <stdint.h>
 
 
-// --- Definiciones de registros para LD2 (Ver RM0351) -------------------------
 #define RCC_BASE    0x40021000U
 #define RCC_AHB2ENR (*(volatile uint32_t *)(RCC_BASE  + 0x4CU)) // Habilita GPIOA/GPIOC clock
 
+// --- Definiciones de registros para LD2 (Ver RM0351) -------------------------
 #define GPIOA_BASE  0x48000000U
 #define GPIOA_MODER (*(volatile uint32_t *)(GPIOA_BASE + 0x00U)) // Configuración de modo
 #define GPIOA_ODR   (*(volatile uint32_t *)(GPIOA_BASE + 0x14U)) // Data de salida
@@ -26,7 +26,7 @@
 #define WFI()       __asm volatile("wfi")
 
 // --- Variable global para contar segundos -----------------------------------
-static volatile uint32_t seconds_counter = 0;
+static volatile uint32_t seconds_counter = 17;
 
 void init_systick(void);
 void init_led(void);
@@ -74,7 +74,7 @@ void check_button(void)
 // --- Inicialización de Systick para 1 s --------------------------------------
 void init_systick(void)
 {
-    SYST_RVR = HSI_FREQ - 1;                      // Recarga = 4000000 - 1
+    SYST_RVR = HSI_FREQ / 1000 - 1;                      // Recarga = 4000 - 1
     SYST_CSR = (1 << 0) | (1 << 1) | (1 << 2);    // ENABLE|TICKINT|CLKSOURCE
 }
 
@@ -85,7 +85,7 @@ void SysTick_Handler(void)
     seconds_counter++;
     
     // Si han pasado 3 segundos o más, apagar LED
-    if (seconds_counter >= 3) {
+    if (seconds_counter >= 3000) {
         GPIOA_ODR &= ~(1 << LD2_PIN);             // Apagar LED
     }
 }

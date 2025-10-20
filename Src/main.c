@@ -1,24 +1,3 @@
-# 10. MAIN.md
-
-## 1. Objetivo
-
-Este documento guía la integración de todos los módulos en `main.c`, configurando el sistema para usar interrupciones en lugar de polling, y coordinando la inicialización de periféricos y la lógica de aplicación.
-
----
-
-## 2. Preparación del Proyecto
-
-1. **Modificar `Src/main.c`**: Actualiza el archivo principal para incluir inicializaciones de nuevos módulos e implementar el bucle principal con interrupciones.
-2. **Asegurar includes**: Incluye todos los headers necesarios.
-3. **Implementar ISRs**: Modifica los archivos de drivers para llamar a las funciones de `room_control` desde las ISRs.
-
----
-
-## 3. Código de referencia para implementar (`Src/main.c`)
-
-Modifica `Src/main.c` para integrar todos los módulos:
-
-```c
 #include "gpio.h"
 #include "systick.h"
 #include "rcc.h"
@@ -41,15 +20,25 @@ static void peripherals_init(void)
     rcc_init();
 
     // Configuración de GPIOs
-    gpio_init(GPIOA, 5, GPIO_MODE_OUTPUT, GPIO_OTYPE_PP, GPIO_OSPEED_LOW, GPIO_PUPD_NONE);  // LED externo
-    gpio_init(GPIOB, 3, GPIO_MODE_OUTPUT, GPIO_OTYPE_PP, GPIO_OSPEED_LOW, GPIO_PUPD_NONE);  // LD2 (heartbeat)
+    gpio_init(GPIOA, 5, 0x01, 0x00, 0x01, 0x00, 0x00);  // LD2 (heartbeat)
+    gpio_init(GPIOC, 13, 0x00, 0x00, 0x01, 0x00, 0x00);  // Botón
 
     // Inicialización de periféricos
-    systick_init();
-    uart_init();  // Asumiendo función unificada
+    init_systick();
+    init_gpio_uart();  // Inicialización GPIO para UART
+    init_uart();       // Inicialización UART
     nvic_exti_pc13_button_enable();
     nvic_usart2_irq_enable();
     tim3_ch1_pwm_init(1000);  // 1 kHz PWM
+}
+
+static void heartbeat_toggle(void)
+{
+    static uint32_t last_toggle_time = 0;
+    if ((system_ms_counter - last_toggle_time) >= 500) { // Toggle cada 500 ms
+        gpio_toggle(GPIOA, 5);
+        last_toggle_time = system_ms_counter;
+    }
 }
 
 int main(void)
@@ -60,6 +49,8 @@ int main(void)
 
     // Bucle principal: procesa eventos
     while (1) {
+        heartbeat_toggle();
+
         if (button_event) {
             button_event = 0;
             room_control_on_button_press();
@@ -97,29 +88,3 @@ void USART2_IRQHandler(void)
         uart_event_char = (char)(USART2->RDR & 0xFF);
     }
 }
-```
-
-
----
-
-## 4. Explicación de cambios
-
-| Sección | Descripción |
-| ------- | ----------- |
-| main | Llama a inicializaciones y entra en bucle para pasar eventos. |
-| Bucle principal | Pasa eventos a room_control. |
-| peripherals_init | Inicializa todos los periféricos. |
-| SysTick_Handler | Maneja tareas periódicas. |
-
----
-
-## 5. Verificación de Funcionamiento
-
-- **Compilación**: Sin errores.
-- **Funcionalidad**: Sistema responde a botón y UART.
-- **Integración**: Eventos pasan correctamente a room_control.
-
----
-
-**Siguiente guía:**
-User Manual: [USER_MANUAL.md](11_USER_MANUAL.md)
